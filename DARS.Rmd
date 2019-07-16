@@ -1,19 +1,76 @@
 ---
-title: "R Notebook"
+title: "DARS analysis"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+```{r setup}
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+#load libraries
+library(readr)
 
-```{r}
-plot(cars)
+#bring in data
+df <- read_csv("CURAGE_DATA_2019-07-11_1042.csv")
+
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r dataMunging}
+
+#delete all test data (turn off when fake records have been removed from database)
+df[,]=matrix(ncol=ncol(df), rep(NA, prod(dim(df))))
+
+#initialize our dataframe
+df[nrow(df)+18,] <- NA
+
+#make fake subject IDs
+df$record_id <- seq(1, 20, by=1) #generating sequence of numbers from 1 to 20
+df$record_id <- sprintf("%02d", df$record_id) #padding all values under record_id column to 2 digits
+df$record_id <- paste("curage_", df$record_id, sep = "", collapse = NULL) #concatenate "curage_id" with existing 2 didgit record id's 1 - 20
+
+#set a "seed", so we can replicate our random selections
+set.seed(123)
+
+#make a list of hobbies people might have
+hobbies <- c('Concerts',
+'Museums',
+'Theater',
+'Dance shows',
+'Comedy clubs',
+'Listen to music',
+'Gym workout',
+'Science research',
+'Spinning',
+'Biking',
+'Martial arts',
+'Running',
+'Swimming',
+'Yoga',
+'Meditation',
+'Gardening',
+'Yard work',
+'House repair',
+'Cleaning')
+df$dars_hobbies_01 <- sample(hobbies, 20, replace=TRUE) #randomly inputting hobbies from list into "dars_hobbies_01" column
+df$dars_hobbies_02 <- sample(hobbies, 10, replace=TRUE)  #randomly inputting hobbies from list into "dars_hobbies_02" column
+selectedRows <- sample(df$record_id, 6, replace=FALSE) #randomly select 6 record IDs
+
+
+foods <- c('Butter chicken',
+  'Dumplings',
+  'Chicken noodle soup',
+  'Lasagna')
+df$dars_foods_01 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_01" column
+df$dars_foods_02 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_02" column
+
+
+```
+
+
+```{r dataCleaning}
+
+#see if there's any duplicates in hobbies, foods, etc
+duplicated(df[,c('dars_hobbies_01', 'dars_hobbies_02')]) 
+
+```
 
