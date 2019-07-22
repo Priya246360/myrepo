@@ -3,6 +3,11 @@ title: "DARS analysis"
 output: html_notebook
 ---
 
+```{r}
+install.packages("readr")
+```
+
+
 ```{r setup}
 
 #load libraries
@@ -59,9 +64,78 @@ selectedRows <- sample(df$record_id, 6, replace=FALSE) #randomly select 6 record
 foods <- c('Butter chicken',
   'Dumplings',
   'Chicken noodle soup',
-  'Lasagna')
+  'Lasagna', 
+  'Bagels', 
+  'Brownies', 
+  'Butter chicken', 
+  'Dumplings', 
+  'Chicken noodle soup', 
+  'Lasagna', 
+  'NY strip steak', 
+  'Perogies', 
+  'Sushi', 
+  'Bubble tea', 
+  'Coffee', 
+  'Gatorade', 
+  'Fruit smoothies', 
+  'Margaritas', 
+  'Red wine', 
+  'Coca-cola', 
+  'Chocolate milk', 
+  'Orange juice')
 df$dars_foods_01 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_01" column
 df$dars_foods_02 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_02" column
+df$dars_foods_03 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_03" column
+selectedRows <- sample(df$record_id, 10, replace=FALSE) #randomly select 10 record IDs
+
+social <-c('Play in band',
+'Act in play', 
+'Going dancing',
+'Going to concerts',
+'House party',
+'Going to plays',
+'Dance classes',
+'Art exhibits',
+'Meet new people',
+'Bowling',
+'Cards',
+'Chess',
+'Shopping',
+'Playing pool',
+'Cottage trips',
+'Camping',
+'Karaoke',
+'Play with grandkids',
+'Biking',
+'Going to gym')
+df$dars_social_01 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_01" column
+df$dars_social_02 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_02" column
+df$dars_social_03 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_03" column
+selectedRows <- sample(df$record_id, 7, replace=FALSE) #randomly select 10 record IDs
+
+sensory <-c('Bread', 
+'Nature', 
+'Home cooked food', 
+'Partners fragrance', 
+'Candles', 
+'Sea', 
+'Coffee', 
+'Flowers', 
+'Hawaiian pizza', 
+'Massage', 
+'Sex', 
+'Feel sun on skin', 
+'Cuddling', 
+'Back scratch', 
+'Petting dog', 
+'Hot bath', 
+'Hugs', 
+'Listening to music', 
+'Comedy podcasts')
+df$dars_sensory_01 <- sample(sensory, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_01" column
+df$dars_sensory_02 <- sample(sensory, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_02" column
+df$dars_sensory_03 <- sample(sensory, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_03" column
+selectedRows <- sample(df$record_id, 7, replace=FALSE) #randomly select 10 record IDs
 
 
 ```
