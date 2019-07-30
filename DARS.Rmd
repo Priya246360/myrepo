@@ -139,6 +139,36 @@ df$dars_sensory_04 <- sample(sensory, 20, replace=TRUE) #randomly inputting sens
 selectedRows <- sample(df$record_id, 7, replace=FALSE) #randomly select 10 record IDs
 
 
+df$dars_hobbies_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_01"
+df$dars_hobbies_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_02"
+df$dars_hobbies_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_03"
+df$dars_hobbies_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_04"
+
+df$dars_foods_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_01"
+df$dars_foods_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_02"
+df$dars_foods_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_03"
+df$dars_foods_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_04"
+
+df$dars_social_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_social_ratings_01"
+df$dars_social_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_social_ratings_02"
+df$dars_social_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_social_ratings_03"
+df$dars_social_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_social_ratings_04"
+
+df$dars_sensory_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_01"
+df$dars_sensory_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_02"
+df$dars_sensory_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_03"
+df$dars_sensory_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_04"
+
+
+```
+
+
+```{r}
+
+#set a "seed", so we can replicate our random selections
+set.seed(123)
+
+
 ```
 
 
@@ -149,6 +179,10 @@ duplicated(df[,c('dars_hobbies_01', 'dars_hobbies_02')])
 duplicated(df[,c('dars_foods_01', 'dars_foods_02','dars_foods_03')])
 duplicated(df[,c('dars_social_01', 'dars_social_02', 'dars_social_03')])
 duplicated(df[,c('dars_sensory_01', 'dars_sensory_02', 'dars_sensory_03', 'dars_sensory_04')])
+
+```
+
+```{r}
 
 ```
 
