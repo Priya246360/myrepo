@@ -4,7 +4,7 @@ output: html_notebook
 ---
 
 ```{r}
-install.packages("readr")
+#install.packages("readr")
 ```
 
 
@@ -26,7 +26,7 @@ df <- read_csv("CURAGE_DATA_2019-07-11_1042.csv")
 df[,]=matrix(ncol=ncol(df), rep(NA, prod(dim(df))))
 
 #initialize our dataframe
-df[nrow(df)+18,] <- NA
+df[nrow(df)+18,] <- NA #for now, just 20 participants to play with
 
 #make fake subject IDs
 df$record_id <- seq(1, 20, by=1) #generating sequence of numbers from 1 to 20
@@ -56,9 +56,29 @@ hobbies <- c('Concerts',
 'Yard work',
 'House repair',
 'Cleaning')
-df$dars_hobbies_01 <- sample(hobbies, 20, replace=TRUE) #randomly inputting hobbies from list into "dars_hobbies_01" column
-df$dars_hobbies_02 <- sample(hobbies, 10, replace=TRUE)  #randomly inputting hobbies from list into "dars_hobbies_02" column
-selectedRows <- sample(df$record_id, 6, replace=FALSE) #randomly select 6 record IDs
+
+#first, for each participant (row), give us a random number, between 2 and the max number of hobbies columns (here, 10) 
+selections <- sample(2:10, nrow(df), replace=T)
+
+#write a function to make the vectors of hobbies
+hobby_fn <- function(hobbies, selections, index){ #takes 3 arguments
+  selected <- sample(hobbies, size=selections[index]) #selects the same number of hobbies as the value, per index
+  selected_length <- length(selected) #stores the length of each selection
+  vec <- c(selected, rep(NA, (ncol(df)-1)-selected_length)) #creates a vector of the hobbies and the rest NA 
+  return(vec) #print the vector
+}
+
+#now, run the function, in a loop, to add vectors to df
+record_id <- 1:nrow(df) #first, make a vector of the number of participants/rows in the df
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- hobby_fn(hobbies, selections, par) #...run the function...
+  df[par, 4:13] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+
+
+
+
 
 
 foods <- c('Butter chicken',
@@ -83,10 +103,6 @@ foods <- c('Butter chicken',
   'Coca-cola', 
   'Chocolate milk', 
   'Orange juice')
-df$dars_foods_01 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_01" column
-df$dars_foods_02 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_02" column
-df$dars_foods_03 <- sample(foods, 20, replace=TRUE) #randomly inputting foods from list into "dars_foods_03" column
-selectedRows <- sample(df$record_id, 10, replace=FALSE) #randomly select 10 record IDs
 
 social <-c('Play in band',
 'Act in play', 
@@ -108,10 +124,6 @@ social <-c('Play in band',
 'Play with grandkids',
 'Biking',
 'Going to gym')
-df$dars_social_01 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_01" column
-df$dars_social_02 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_02" column
-df$dars_social_03 <- sample(social, 20, replace=TRUE) #randomly inputting foods from list into "dars_social_03" column
-selectedRows <- sample(df$record_id, 7, replace=FALSE) #randomly select 10 record IDs
 
 sensory <-c('Bread', 
 'Nature', 
@@ -132,11 +144,6 @@ sensory <-c('Bread',
 'Hugs', 
 'Listening to music', 
 'Comedy podcasts')
-df$dars_sensory_01 <- sample(sensory, 20, replace=TRUE) #randomly inputting sensory from list into "dars_sensory_01" column
-df$dars_sensory_02 <- sample(sensory, 20, replace=TRUE) #randomly inputting sensory from list into "dars_sensory_02" column
-df$dars_sensory_03 <- sample(sensory, 20, replace=TRUE) #randomly inputting sensory from list into "dars_sensory_03" column
-df$dars_sensory_04 <- sample(sensory, 20, replace=TRUE) #randomly inputting sensory from list into "dars_sensory_04" column
-selectedRows <- sample(df$record_id, 7, replace=FALSE) #randomly select 10 record IDs
 
 
 df$dars_hobbies_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_01"
@@ -176,9 +183,7 @@ set.seed(123)
 
 #see if there's any duplicates in hobbies, foods, etc
 duplicated(df[,c('dars_hobbies_01', 'dars_hobbies_02')]) 
-duplicated(df[,c('dars_foods_01', 'dars_foods_02','dars_foods_03')])
-duplicated(df[,c('dars_social_01', 'dars_social_02', 'dars_social_03')])
-duplicated(df[,c('dars_sensory_01', 'dars_sensory_02', 'dars_sensory_03', 'dars_sensory_04')])
+
 
 ```
 
