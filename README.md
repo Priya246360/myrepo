@@ -1,6 +1,3 @@
-# myrepo
+# DARS
 
-TEST
-sunshine
-rainbows
-more practice
+This code is for the analysis of DARS data in the CurAge study.
