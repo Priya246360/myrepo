@@ -3,40 +3,25 @@ title: "DARS analysis"
 output: html_notebook
 ---
 
-```{r}
-#install.packages("readr")
-```
-
-
 ```{r setup}
 
-#load libraries
-library(readr)
+#load libraries (install if you don't have them!)
+library(readr) 
+library(tidyverse)
 
-#bring in data
-df <- read_csv("CURAGE_DATA_2019-07-11_1042.csv")
-
-```
-
-
-
-```{r dataMunging}
-
-#delete all test data (turn off when fake records have been removed from database)
-df[,]=matrix(ncol=ncol(df), rep(NA, prod(dim(df))))
-
-#initialize our dataframe
-df[nrow(df)+18,] <- NA #for now, just 20 participants to play with
-
-#make fake subject IDs
-df$record_id <- seq(1, 20, by=1) #generating sequence of numbers from 1 to 20
-df$record_id <- sprintf("%02d", df$record_id) #padding all values under record_id column to 2 digits
-df$record_id <- paste("curage_", df$record_id, sep = "", collapse = NULL) #concatenate "curage_id" with existing 2 didgit record id's 1 - 20
+#bring in data (pulled from REDCap)
+df <- read_csv("CURAGE_DATA_2019-07-11_1042.csv") 
 
 #set a "seed", so we can replicate our random selections
 set.seed(123)
 
-#make a list of hobbies people might have
+```
+
+```{r fakeData_lists}
+
+#make lists of hobbies, food, social, sensory that people might have - lists taken from DARS paper
+
+#hobbies 
 hobbies <- c('Concerts',
 'Museums',
 'Theater',
@@ -57,30 +42,7 @@ hobbies <- c('Concerts',
 'House repair',
 'Cleaning')
 
-#first, for each participant (row), give us a random number, between 2 and the max number of hobbies columns (here, 10) 
-selections <- sample(2:10, nrow(df), replace=T)
-
-#write a function to make the vectors of hobbies
-hobby_fn <- function(hobbies, selections, index){ #takes 3 arguments
-  selected <- sample(hobbies, size=selections[index]) #selects the same number of hobbies as the value, per index
-  selected_length <- length(selected) #stores the length of each selection
-  vec <- c(selected, rep(NA, (ncol(df)-1)-selected_length)) #creates a vector of the hobbies and the rest NA 
-  return(vec) #print the vector
-}
-
-#now, run the function, in a loop, to add vectors to df
-record_id <- 1:nrow(df) #first, make a vector of the number of participants/rows in the df
-for (par in record_id) { #for each participant in our list of participants...
-  vec <- hobby_fn(hobbies, selections, par) #...run the function...
-  df[par, 4:13] <- vec #...add output to the df; note, index will change if database structure changes
-}
-
-
-
-
-
-
-
+#foods
 foods <- c('Butter chicken',
   'Dumplings',
   'Chicken noodle soup',
@@ -104,6 +66,7 @@ foods <- c('Butter chicken',
   'Chocolate milk', 
   'Orange juice')
 
+#social
 social <-c('Play in band',
 'Act in play', 
 'Going dancing',
@@ -125,6 +88,7 @@ social <-c('Play in band',
 'Biking',
 'Going to gym')
 
+#sensory
 sensory <-c('Bread', 
 'Nature', 
 'Home cooked food', 
@@ -145,11 +109,112 @@ sensory <-c('Bread',
 'Listening to music', 
 'Comedy podcasts')
 
+```
 
+```{r fakeData_addingValues}
+
+####################################
+#set up our dataframe
+####################################
+
+#delete all test data (turn off when fake records have been removed from database)
+df[,]=matrix(ncol=ncol(df), rep(NA, prod(dim(df))))
+
+#initialize our dataframe
+df[nrow(df)+18,] <- NA #for now, just 20 participants to play with; can change value 
+
+#make fake subject IDs
+df$record_id <- seq(1, nrow(df), by=1) #generating sequence of numbers from 1 to number of rows in df
+df$record_id <- sprintf("%02d", df$record_id) #padding all values under record_id column to 2 digits
+df$record_id <- paste("curage_", df$record_id, sep = "", collapse = NULL) #concatenate "curage_id" with existing 2 didgit record id's 1 - 20
+
+#make a vector of the number of participants/rows in the df - will be useful later
+record_id <- 1:nrow(df) 
+
+#add a column with fake diagnosis (DEP, HC)
+
+#add a column with fake sex (M, F, O)
+
+#add a column with fake age (60-8-)
+
+########################################################################
+#make lists of the variables we'll be working with!
+########################################################################
+
+#hobbies
+#hobbiesList_vars <- select_vars(names(df), contains('dars_hobbies_'), -contains('ratings')) #list of all the variables that match the string - exclude ratings
+hobbiesList_idx <-  grep("dars_hobbies_", names(df)) #list of index of these vars - exclude ratings
+
+#hobbiesRatings_vars <- select_vars(names(df), contains('dars_hobbies_ratings_')) #list of all the variables that match the string 
+hobbiesRatings_idx <-  grep("dars_hobbies_ratings_", names(df)) #list of index of these vars
+
+#....do the same for the other categories (foods and social and sensory)!...
+
+
+##########################################################################
+#now, let's write some functions that will help us avoid redundant code
+##########################################################################
+
+#######################
+#select item from list
+#######################
+
+#for each DARS category, and each participant (row), we want a random number, between 2 and the max number of variable columns 
+#note, the max number of variables is always 10, and min number is always 2, because of structure of DARS scale 
+countChoice  <- sample(2:10, nrow(df), replace=T)
+
+#write a function to make vectors of variable of interest (hobbies, food, social, sensory)
+darsChoice_fn <- function(category, countChoice, index){ #takes 3 arguments
+  selected <- sample(category, size=countChoice[index]) #selects the same number of the category (e.g. hobbies) as the value, per index
+  selected_length <- length(selected) #stores the length of each selection
+  vec <- c(selected, rep(NA, (ncol(df)-1)-selected_length)) #creates a vector of the category (e.g. hobbies) and the rest NA 
+  return(vec) #return the vector
+}
+
+#######################
+#select value
+#######################
+
+#random number between 1 and 5 on the Likert scale, for each participant/row in the database
+countValue  <- sample(1:5, nrow(df), replace=T)
+
+#write a function to fill in the vectors of variable of interest (hobbies, food, social, sensory) with a value
+darsRating_fn <- function(category, index){ #takes 2 arguments
+  values  <- sample(1:5, nrow(df), replace=T) #randomly sample values between 1 and 5 (Likert scale)
+  return(values) #return the vector
+}
+
+
+#####################################################
+#now, let's run the functions to fill in values
+#####################################################
+
+
+#HOBBIES 
+
+#fill in hobbies from list
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(hobbies, countChoice, par) #...run the function...
+  df[par, hobbiesList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(hobbies, hobbiesRatings_idx)
+  df[par, hobbiesRatings_idx] <- vec
+}
+
+
+#FOOD ... ETC
+
+
+ 
 df$dars_hobbies_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_01"
 df$dars_hobbies_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_02"
 df$dars_hobbies_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_03"
 df$dars_hobbies_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_04"
+
+#####your code above ^^^ totally works, but we can do it in a slightly less redundant way! let me know what you think. :)
 
 df$dars_foods_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_01"
 df$dars_foods_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_02"
@@ -172,8 +237,6 @@ df$dars_sensory_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly
 
 ```{r}
 
-#set a "seed", so we can replicate our random selections
-set.seed(123)
 
 
 ```
