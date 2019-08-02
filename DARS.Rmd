@@ -5,6 +5,8 @@ output: html_notebook
 
 ```{r setup}
 
+install.packages("tidyverse")
+
 #load libraries (install if you don't have them!)
 library(readr) 
 library(tidyverse)
@@ -129,13 +131,17 @@ df$record_id <- sprintf("%02d", df$record_id) #padding all values under record_i
 df$record_id <- paste("curage_", df$record_id, sep = "", collapse = NULL) #concatenate "curage_id" with existing 2 didgit record id's 1 - 20
 
 #make a vector of the number of participants/rows in the df - will be useful later
-record_id <- 1:nrow(df) 
+record_id <- 1:nrow(df)
 
 #add a column with fake diagnosis (DEP, HC)
+df["dars_diagnosis"] <- sample (c('MDD', 'HC'), size = 20, replace = TRUE)
 
 #add a column with fake sex (M, F, O)
+df["dars_sex"] <- sample (c('F', 'M'), size = 20, replace = TRUE)
 
 #add a column with fake age (60-8-)
+df["dars_age"] <- sample (c(20:80), size = 20, replace = TRUE)
+
 
 ########################################################################
 #make lists of the variables we'll be working with!
@@ -143,12 +149,19 @@ record_id <- 1:nrow(df)
 
 #hobbies
 #hobbiesList_vars <- select_vars(names(df), contains('dars_hobbies_'), -contains('ratings')) #list of all the variables that match the string - exclude ratings
-hobbiesList_idx <-  grep("dars_hobbies_", names(df)) #list of index of these vars - exclude ratings
+hobbiesList_idx <-  grep("dars_hobbies_", names(df)) #list of index of these vars - exclude ratings ---------------------------Still Includes ratings though------------------------
 
 #hobbiesRatings_vars <- select_vars(names(df), contains('dars_hobbies_ratings_')) #list of all the variables that match the string 
 hobbiesRatings_idx <-  grep("dars_hobbies_ratings_", names(df)) #list of index of these vars
 
-#....do the same for the other categories (foods and social and sensory)!...
+foodsList_idx <-  grep("dars_foods_", names(df))#list of index of these vars
+foodsRatings_idx <-  grep("dars_foods_ratings_", names(df)) #list of index of these vars
+
+socialList_idx <-  grep("dars_social_", names(df))#list of index of these vars
+socialRatings_idx <-  grep("dars_social_ratings_", names(df)) #list of index of these vars
+
+sensoryList_idx <-  grep("dars_sensory_", names(df))#list of index of these vars
+sensoryRatings_idx <-  grep("dars_sensory_ratings_", names(df)) #list of index of these vars
 
 
 ##########################################################################
@@ -205,10 +218,54 @@ for (par in record_id) {
 }
 
 
-#FOOD ... ETC
+#FOOD 
+
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(foods, countChoice, par) #...run the function...
+  df[par, foodsList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(foods, foodsRatings_idx)
+  df[par, foodsRatings_idx] <- vec
+}
 
 
- 
+#SOCIAL
+
+
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(social, countChoice, par) #...run the function...
+  df[par, socialList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(social, socialRatings_idx)
+  df[par, socialRatings_idx] <- vec
+}
+
+
+#SENSORY
+
+
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(sensory, countChoice, par) #...run the function...
+  df[par, sensoryList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(sensory, foodsRatings_idx)
+  df[par, sensoryRatings_idx] <- vec
+}
+
+```
+
+
+```{r}
+
 df$dars_hobbies_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_01"
 df$dars_hobbies_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_02"
 df$dars_hobbies_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_03"
@@ -230,12 +287,6 @@ df$dars_sensory_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly
 df$dars_sensory_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_02"
 df$dars_sensory_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_03"
 df$dars_sensory_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_sensory_ratings_04"
-
-
-```
-
-
-```{r}
 
 
 
