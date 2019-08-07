@@ -142,10 +142,7 @@ record_id <- 1:nrow(df)
 ########################################################################
 
 #hobbies
-#hobbiesList_vars <- select_vars(names(df), contains('dars_hobbies_'), -contains('ratings')) #list of all the variables that match the string - exclude ratings
 hobbiesList_idx <-  grep("dars_hobbies_", names(df)) #list of index of these vars - exclude ratings
-
-#hobbiesRatings_vars <- select_vars(names(df), contains('dars_hobbies_ratings_')) #list of all the variables that match the string 
 hobbiesRatings_idx <-  grep("dars_hobbies_ratings_", names(df)) #list of index of these vars
 
 #....do the same for the other categories (foods and social and sensory)!...
@@ -170,6 +167,8 @@ darsChoice_fn <- function(category, countChoice, index){ #takes 3 arguments
   vec <- c(selected, rep(NA, (ncol(df)-1)-selected_length)) #creates a vector of the category (e.g. hobbies) and the rest NA 
   return(vec) #return the vector
 }
+
+
 
 #######################
 #select value
@@ -207,14 +206,17 @@ for (par in record_id) {
 
 #FOOD ... ETC
 
+```
 
+#####your code below totally works, but we can do it in a slightly less redundant way, as above! let me know what you think. :)
+
+
+```{r}
  
 df$dars_hobbies_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_01"
 df$dars_hobbies_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_02"
 df$dars_hobbies_ratings_03 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_03"
 df$dars_hobbies_ratings_04 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_hobbies_ratings_04"
-
-#####your code above ^^^ totally works, but we can do it in a slightly less redundant way! let me know what you think. :)
 
 df$dars_foods_ratings_01 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_01"
 df$dars_foods_ratings_02 <-sample(x = 1:5, size = 20, replace = TRUE)#randomly inputting numbers from likert scale (wherein 1 = "not at all" and 5 = "always") into "dars_foods_ratings_02"
