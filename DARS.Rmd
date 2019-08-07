@@ -5,6 +5,8 @@ output: html_notebook
 
 ```{r setup}
 
+install.packages("ggpubr")
+
 #load libraries (install if you don't have them!)
 library(readr) 
 library(tidyverse)
@@ -133,11 +135,13 @@ df$record_id <- paste("curage_", df$record_id, sep = "", collapse = NULL) #conca
 record_id <- 1:nrow(df) 
 
 #add a column with fake diagnosis (DEP, HC)
-df$dx <- sample(c('HC', 'MDD'), size=nrow(df), replace=T)
+df$dars_diagnosis <- sample(c('HC', 'MDD'), size=nrow(df), replace=T)
 
 #add a column with fake sex (M, F, O)
+df$dars_gender <- sample(c('M', 'F', 'O'), size=nrow(df), replace=T)
 
-#add a column with fake age (60-80)
+#add a column with fake age (20-80)
+df$dars_age <- sample(c(20:80), size=nrow(df), replace=T)
 
 ########################################################################
 #make lists of the variables we'll be working with!
@@ -147,7 +151,17 @@ df$dx <- sample(c('HC', 'MDD'), size=nrow(df), replace=T)
 hobbiesList_idx <-  grep("dars_hobbies_", names(df)) #list of index of these vars - exclude ratings
 hobbiesRatings_idx <-  grep("dars_hobbies_ratings_", names(df)) #list of index of these vars
 
-#....do the same for the other categories (foods and social and sensory)!...
+#foods
+foodsList_idx <-  grep("dars_foods_", names(df)) #list of index of these vars - exclude ratings
+foodsRatings_idx <-  grep("dars_foods_ratings_", names(df)) #list of index of these vars
+
+#social
+socialList_idx <-  grep("dars_social_", names(df)) #list of index of these vars - exclude ratings
+socialRatings_idx <-  grep("dars_social_ratings_", names(df)) #list of index of these vars
+
+#sensory
+sensoryList_idx <-  grep("dars_sensory_", names(df)) #list of index of these vars - exclude ratings
+sensoryRatings_idx <-  grep("dars_sensory_ratings_", names(df)) #list of index of these vars
 
 
 ##########################################################################
@@ -169,8 +183,6 @@ darsChoice_fn <- function(category, countChoice, index){ #takes 3 arguments
   vec <- c(selected, rep(NA, (ncol(df)-1)-selected_length)) #creates a vector of the category (e.g. hobbies) and the rest NA 
   return(vec) #return the vector
 }
-
-
 
 #######################
 #select value
@@ -206,17 +218,49 @@ for (par in record_id) {
 }
 
 
-#FOOD ... ETC
+#FOOD 
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(foods, countChoice, par) #...run the function...
+  df[par, foodsList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
 
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(foods, foodsRatings_idx)
+  df[par, foodsRatings_idx] <- vec
+}
+
+#SOCIAL
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(social, countChoice, par) #...run the function...
+  df[par, socialList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(social, socialRatings_idx)
+  df[par, socialRatings_idx] <- vec
+}
+
+
+#SENSORY
+for (par in record_id) { #for each participant in our list of participants...
+  vec <- darsChoice_fn(sensory, countChoice, par) #...run the function...
+  df[par, sensoryList_idx] <- vec #...add output to the df; note, index will change if database structure changes
+}
+
+#fill in ratings
+for (par in record_id) {
+  vec <- darsRating_fn(sensory, sensoryRatings_idx)
+  df[par, sensoryRatings_idx] <- vec
+}
 ```
-
-#####your code below totally works, but we can do it in a slightly less redundant way, as above! let me know what you think. :)
 
 
 ```{r munging}
 
 #make a list of all the variables with the string 'ratings' in the name
-ratings_vars <- grep("ratings", names(df), value=TRUE) #it looks like we have 5 ratings for sensory - make sure this is correct
+ratings_vars <- grep("ratings", names(df), value=TRUE) 
 
 #make sure that all of the 'ratings' variables are numeric (not characters)
 df[, ratings_vars] <- lapply(ratings_vars, function(x) as.numeric(df[[x]]))
@@ -234,7 +278,7 @@ df$dars_totalScore <- rowSums(df[, colnames(df) %in% ratings_vars], na.rm=T) #we
 #follow the examples here: http://www.sthda.com/english/wiki/unpaired-two-samples-t-test-in-r
 
 #first, let's summarize the data, so we can get a quick, intuitive feel for it
-group_by(df, dx) %>%
+group_by(df, dars_diagnosis) %>% 
   summarise(
     count = n(),
     mean = mean(dars_totalScore , na.rm = TRUE),
@@ -242,17 +286,30 @@ group_by(df, dx) %>%
   )
 
 #visualize the data using boxplots!
+library("ggpubr")
+ggboxplot(df, x = "dars_diagnosis", y = "dars_totalScore", 
+          color = "dars_diagnosis", palette = c("#00AFBB", "#E7B800"),
+        ylab = "dars_totalScore", xlab = "dars_diagnosis")
 
-#check t-test assumptions: are the data normally distributed?
+#check t-test assumptions: are the data normally distributed - using shapiro-wilk normality test?
+with(df, shapiro.test(dars_totalScore[dars_diagnosis == "MDD"]))
+
+with(df, shapiro.test(dars_totalScore[dars_diagnosis == "HC"]))
 
 #check t-test assumptions: do the populations have similar variances?
+res.ftest <- var.test(dars_totalScore ~ dars_diagnosis, data = df)
+res.ftest
 
 #perform the t-test (decide if should be one to two sided!)
 #will look something like `t.test(x ~ y, data = df)`, with a tilde, as our data is in a dataframe!
+t.test(dars_totalScore ~ dars_diagnosis, data = df,
+        var.equal = TRUE, alternative = "less")
 
 #print the p-value
+p = .3516
 
 #verbally interpret/ summarize
+#Since p>alpha (.3516>.05), failt to reject the null hypothesis. Conclude that the mean rating scores of MDD subjects is not less than that of HC subjects. 
 
 
 ```
