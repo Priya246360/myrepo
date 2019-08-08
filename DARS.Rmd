@@ -137,11 +137,11 @@ record_id <- 1:nrow(df)
 #add a column with fake diagnosis (DEP, HC)
 df$dars_diagnosis <- sample(c('HC', 'MDD'), size=nrow(df), replace=T)
 
-#add a column with fake sex (M, F, O)
-df$dars_gender <- sample(c('M', 'F', 'O'), size=nrow(df), replace=T)
+#add a column with fake sex (M, F)
+df$dars_gender <- sample(c('M', 'F'), size=nrow(df), replace=T)
 
-#add a column with fake age (20-80)
-df$dars_age <- sample(c(20:80), size=nrow(df), replace=T)
+#add a column with fake age (20 to 35 and 65 to 80)
+df$dars_age <- sample(c(20:35, 65:80), size=nrow(df), replace=T)
 
 ########################################################################
 #make lists of the variables we'll be working with!
@@ -270,51 +270,116 @@ df$dars_totalScore <- rowSums(df[, colnames(df) %in% ratings_vars], na.rm=T) #we
 
 ```
 
-```{r statistics}
+```{r statistics unpaired 2 sample t test for total rating scores}
 
-#We want an unpaired two-samples t-test: we want to know if the mean for HC is the same as the mean for MDD, on the DARS total score variable. We would want a directional (one-tailed) test, because we would hypothesize that the MDD group would have a lower/higher score.
+#mean dars_totalScore for MDD vs mean dars_totalScore for HC
 #We (most likely) won't see a difference as we didn't assign different probabilities to HC and MDD groups, but we change that!
-
 #follow the examples here: http://www.sthda.com/english/wiki/unpaired-two-samples-t-test-in-r
 
-#first, let's summarize the data, so we can get a quick, intuitive feel for it
+#data summary
 group_by(df, dars_diagnosis) %>% 
   summarise(
     count = n(),
     mean = mean(dars_totalScore , na.rm = TRUE),
     sd = sd(dars_totalScore , na.rm = TRUE)
   )
-
 #visualize the data using boxplots!
 library("ggpubr")
 ggboxplot(df, x = "dars_diagnosis", y = "dars_totalScore", 
           color = "dars_diagnosis", palette = c("#00AFBB", "#E7B800"),
         ylab = "dars_totalScore", xlab = "dars_diagnosis")
-
 #check t-test assumptions: are the data normally distributed - using shapiro-wilk normality test?
 with(df, shapiro.test(dars_totalScore[dars_diagnosis == "MDD"]))
-
 with(df, shapiro.test(dars_totalScore[dars_diagnosis == "HC"]))
-
 #check t-test assumptions: do the populations have similar variances?
 res.ftest <- var.test(dars_totalScore ~ dars_diagnosis, data = df)
 res.ftest
-
 #perform the t-test (decide if should be one to two sided!)
 #will look something like `t.test(x ~ y, data = df)`, with a tilde, as our data is in a dataframe!
 t.test(dars_totalScore ~ dars_diagnosis, data = df,
         var.equal = TRUE, alternative = "less")
-
 #print the p-value
 p = .3516
-
 #verbally interpret/ summarize
-#Since p>alpha (.3516>.05), failt to reject the null hypothesis. Conclude that the mean rating scores of MDD subjects is not less than that of HC subjects. 
+#Since p>alpha (.3516>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of MDD subjects is not less than that of HC subjects.
 
+
+
+#mean dars_totalScore for females vs mean dars_totalScore for males
+
+#first, let's summarize the data, so we can get a quick, intuitive feel for it
+group_by(df, dars_gender) %>% 
+  summarise(
+    count = n(),
+    mean = mean(dars_totalScore , na.rm = TRUE),
+    sd = sd(dars_totalScore , na.rm = TRUE)
+  )
+#visualize the data using boxplots!
+ggboxplot(df, x = "dars_gender", y = "dars_totalScore", 
+          color = "dars_gender", palette = c("#00AFBB", "#E7B800"),
+        ylab = "dars_totalScore", xlab = "dars_gender")
+#check t-test assumptions: are the data normally distributed - using shapiro-wilk normality test?
+with(df, shapiro.test(dars_totalScore[dars_gender == "F"]))
+with(df, shapiro.test(dars_totalScore[dars_gender == "M"]))
+#check t-test assumptions: do the populations have similar variances?
+res.ftest <- var.test(dars_totalScore ~ dars_gender, data = df)
+res.ftest
+#perform the t-test (two sided!)
+#will look something like `t.test(x ~ y, data = df)`, with a tilde, as our data is in a dataframe!
+t.test(dars_totalScore ~ dars_gender, data = df,
+        var.equal = TRUE)
+#print the p-value
+p = .8968
+#verbally interpret/ summarize
+#Since p>alpha (.8968>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of female subjects is not significantly different from that of male subjects. 
+
+
+#mean dars_totalScore for subjects aged 20-35 vs mean dars_totalScore for subjects aged 65-80
+
+#create new column in df - dars_age_category
+#http://www.talkstats.com/threads/adding-a-new-column-in-r-data-frame-with-values-conditional-on-another-column.30924/
+df$dars_age_category[df$dars_age>=20 & df$dars_age<=35]<-"young"
+df$dars_age_category[df$dars_age>=60 & df$dars_age<=80]<-"old"
+
+#first, let's summarize the data, so we can get a quick, intuitive feel for it
+group_by(df, dars_age_category) %>% 
+  summarise(
+    count = n(),
+    mean = mean(dars_totalScore , na.rm = TRUE),
+    sd = sd(dars_totalScore , na.rm = TRUE)
+  )
+#visualize the data using boxplots!
+ggboxplot(df, x = "dars_age_category", y = "dars_totalScore", 
+          color = "dars_age_category", palette = c("#00AFBB", "#E7B800"),
+        ylab = "dars_totalScore", xlab = "dars_age_category")
+#check t-test assumptions: are the data normally distributed - using shapiro-wilk normality test?
+with(df, shapiro.test(dars_totalScore[dars_age_category == "old"]))
+with(df, shapiro.test(dars_totalScore[dars_age_category == "young"]))
+#check t-test assumptions: do the populations have similar variances?
+res.ftest <- var.test(dars_totalScore ~ dars_age_category, data = df)
+res.ftest
+#perform the t-test (two sided!)
+#will look something like `t.test(x ~ y, data = df)`, with a tilde, as our data is in a dataframe!
+t.test(dars_totalScore ~ dars_age_category, data = df,
+        var.equal = TRUE)
+#print the p-value
+p = .4087
+#verbally interpret/ summarize
+#Since p>alpha (.4087>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of old subjects is not significantly different from that of young subjects. 
 
 ```
 
 
+```{r statistics unpaired 2 sample t test for total rating scores}
+
+df$dars_hobbies_ratings_total <- df$dars_hobbies_ratings_01 + df$dars_hobbies_ratings_02 + df$dars_hobbies_ratings_03 + df$dars_hobbies_ratings_04
+df$dars_foods_ratings_total <- df$dars_foods_ratings_01 + df$dars_foods_ratings_02 + df$dars_foods_ratings_03 + df$dars_foods_ratings_04
+df$dars_social_ratings_total <- df$dars_social_ratings_01 + df$dars_social_ratings_02 + df$dars_social_ratings_03 + df$dars_social_ratings_04
+df$dars_sensory_ratings_total <- df$dars_sensory_ratings_01 + df$dars_sensory_ratings_02 + df$dars_sensory_ratings_03 + df$dars_sensory_ratings_04
+
+
+
+```
 
 
 
