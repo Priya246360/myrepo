@@ -370,14 +370,28 @@ p = .4087
 ```
 
 
-```{r statistics unpaired 2 sample t test for total rating scores}
+```{r statistics paired 2 sample t test for total rating scores}
 
+#creating columns containing totals for each rating category (hobbies, foods, social, sensory)
 df$dars_hobbies_ratings_total <- df$dars_hobbies_ratings_01 + df$dars_hobbies_ratings_02 + df$dars_hobbies_ratings_03 + df$dars_hobbies_ratings_04
 df$dars_foods_ratings_total <- df$dars_foods_ratings_01 + df$dars_foods_ratings_02 + df$dars_foods_ratings_03 + df$dars_foods_ratings_04
 df$dars_social_ratings_total <- df$dars_social_ratings_01 + df$dars_social_ratings_02 + df$dars_social_ratings_03 + df$dars_social_ratings_04
 df$dars_sensory_ratings_total <- df$dars_sensory_ratings_01 + df$dars_sensory_ratings_02 + df$dars_sensory_ratings_03 + df$dars_sensory_ratings_04
 
+###########################################################################################
+#HELP
+#http://www.sthda.com/english/wiki/paired-samples-t-test-in-r
 
+#Within each group of subjects (MDD, HC, female, male, young, old), we are trying to compare the mean total rating score for hobbies to mean total rating score for foods; #the mean total rating score for hobbies to mean total rating score for social; 
+#the mean total rating score for hobbies to mean total rating score for sensory; 
+#the mean total rating score for foods to mean total rating score for social; 
+#the mean total rating score for foods to mean total rating score for sensory; 
+#the mean total rating score for social to mean total rating score for sensory
+
+#I do not know how to apply the paired two sample t test process as outlned in the website above to our data - because out data frame is organized differently (their data frame only contains data from the one group of subjects in question while ours contains multiple - MDD, HC, F, M, young, old; 
+#also, in the website, the two categories being compared (in their case, before and after) are placed in the same column while the categories we're comparing are placed in different columns - (dars_hobbies_ratings_total, dars_foods_ratings_total, social_ratings_total, dars_sensory_ratings_total))
+
+###########################################################################################
 
 ```
 
