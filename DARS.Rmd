@@ -6,6 +6,7 @@ output: html_notebook
 ```{r setup}
 
 #load libraries (install if you don't have them!)
+library(reshape2)
 library(readr) 
 library(tidyverse)
 library(ggplot2)
@@ -397,7 +398,24 @@ df$dars_sensory_ratings_total <- df$dars_sensory_ratings_01 + df$dars_sensory_ra
 #HELP
 #http://www.sthda.com/english/wiki/paired-samples-t-test-in-r
 
-#Within each group of subjects (MDD, HC, female, male, young, old), we are trying to compare the mean total rating score for hobbies to mean total rating score for foods; #the mean total rating score for hobbies to mean total rating score for social; 
+#Within each group of subjects (MDD, HC, female, male, young, old), we are trying to compare the mean total rating score for hobbies to mean total rating score for foods; 
+
+#This analysis is going to give rise to a lot of tests! We should make sure that this analysis is well-motivated theoretically, and we will have to consider controlling for multiple comparisons. I am not sure that this would be a t-test; as what we are doing is looking at the distribution of data within a narrow group (e.g., MDD, female, young, compared on hobbies, food, social, etc). Also, for our synthetic data here, and possibly in our real data, we will h we will have very small sample sizes if we 'slice' the data in this way. :)
+
+#I think a better way to approach this at this would be to visualize the distribution of the data for each group, and follow up with a statistical test - I believe an ANOVA followed up by t-tests if significant. 
+
+#First, let's take a smaller subset of the dataframe so easier to think about
+df.totals <- df[, c("record_id", "dars_diagnosis",  "dars_gender", "dars_age_category",
+  "dars_hobbies_ratings_total", "dars_foods_ratings_total", "dars_social_ratings_total", "dars_sensory_ratings_total")]
+
+#Now, we 'melt' the dataframe, to get it in the right 'shape' (take a look - we have one row for each participant for each score)
+df.totals <- melt(df.totals, id.vars=c("record_id", "dars_diagnosis",  "dars_gender", "dars_age_category"))
+
+#plot
+ggplot(data = df.totals, aes(x=value)) + geom_density(aes(fill=dars_diagnosis), alpha = 0.4) + facet_wrap(variable ~ dars_age_category) #we cat add a third 'facet' of dars_gender, but we don't have enough data at the moment in these very small groups!
+
+
+#the mean total rating score for hobbies to mean total rating score for social; 
 #the mean total rating score for hobbies to mean total rating score for sensory; 
 #the mean total rating score for foods to mean total rating score for social; 
 #the mean total rating score for foods to mean total rating score for sensory; 
