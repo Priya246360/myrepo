@@ -5,12 +5,11 @@ output: html_notebook
 
 ```{r setup}
 
-install.packages("ggpubr")
-
 #load libraries (install if you don't have them!)
 library(readr) 
 library(tidyverse)
 library(ggplot2)
+library(ggpubr)
 
 #bring in data (pulled from REDCap)
 df <- read_csv("CURAGE_DATA_2019-07-11_1042.csv") 
@@ -268,13 +267,22 @@ df[, ratings_vars] <- lapply(ratings_vars, function(x) as.numeric(df[[x]]))
 #now, sum across all of these columns (ignore NA)
 df$dars_totalScore <- rowSums(df[, colnames(df) %in% ratings_vars], na.rm=T) #we probably shouldn't ignore NA - if we're missing a value, we do want NA, as something has gone wrong
 
+#create new column in df for age_category (young vs old)
+#http://www.talkstats.com/threads/adding-a-new-column-in-r-data-frame-with-values-conditional-on-another-column.30924/
+#df$dars_age_category[df$dars_age>=20 & df$dars_age<=35]<-"young"
+#df$dars_age_category[df$dars_age>=60 & df$dars_age<=80]<-"old"
+df$dars_age_category <- ifelse(df$dars_age <= 35, 'young', 'old')
+#^I moved this up to be with similar stuff (new variable creation, and did it in simpler way - it reads: if age is equal to or less than 35, write 'young', otherwise, write 'old')
+
 ```
 
 ```{r statistics unpaired 2 sample t test for total rating scores}
 
-#mean dars_totalScore for MDD vs mean dars_totalScore for HC
-#We (most likely) won't see a difference as we didn't assign different probabilities to HC and MDD groups, but we change that!
 #follow the examples here: http://www.sthda.com/english/wiki/unpaired-two-samples-t-test-in-r
+
+###############################################################
+#mean dars_totalScore for MDD vs mean dars_totalScore for HC
+###############################################################
 
 #data summary
 group_by(df, dars_diagnosis) %>% 
@@ -283,29 +291,37 @@ group_by(df, dars_diagnosis) %>%
     mean = mean(dars_totalScore , na.rm = TRUE),
     sd = sd(dars_totalScore , na.rm = TRUE)
   )
+
 #visualize the data using boxplots!
-library("ggpubr")
 ggboxplot(df, x = "dars_diagnosis", y = "dars_totalScore", 
           color = "dars_diagnosis", palette = c("#00AFBB", "#E7B800"),
         ylab = "dars_totalScore", xlab = "dars_diagnosis")
+
 #check t-test assumptions: are the data normally distributed - using shapiro-wilk normality test?
-with(df, shapiro.test(dars_totalScore[dars_diagnosis == "MDD"]))
-with(df, shapiro.test(dars_totalScore[dars_diagnosis == "HC"]))
+with(df, shapiro.test(dars_totalScore[dars_diagnosis == "MDD"])) #not sig - so ok!
+with(df, shapiro.test(dars_totalScore[dars_diagnosis == "HC"])) #not sig - so ok!
+
 #check t-test assumptions: do the populations have similar variances?
-res.ftest <- var.test(dars_totalScore ~ dars_diagnosis, data = df)
+res.ftest <- var.test(dars_totalScore ~ dars_diagnosis, data = df) #not sig - so ok!
 res.ftest
+
 #perform the t-test (decide if should be one to two sided!)
-#will look something like `t.test(x ~ y, data = df)`, with a tilde, as our data is in a dataframe!
 t.test(dars_totalScore ~ dars_diagnosis, data = df,
         var.equal = TRUE, alternative = "less")
+
 #print the p-value
-p = .3516
+#p = .3516 #looks like 0.9065? But still same conclusion. It's a better idea to pull out the value from the results, with code, instead of hard coding it, in case anything changes!
+
 #verbally interpret/ summarize
 #Since p>alpha (.3516>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of MDD subjects is not less than that of HC subjects.
 
+#it might be a nice idea to make shorter chunks for our results - so we can more easily them without scrolling down too far - but this is just a preference, and totally up to you!
+```
 
-
+```{r}
+###############################################################
 #mean dars_totalScore for females vs mean dars_totalScore for males
+###############################################################
 
 #first, let's summarize the data, so we can get a quick, intuitive feel for it
 group_by(df, dars_gender) %>% 
@@ -329,17 +345,13 @@ res.ftest
 t.test(dars_totalScore ~ dars_gender, data = df,
         var.equal = TRUE)
 #print the p-value
-p = .8968
+#p = .8968
 #verbally interpret/ summarize
 #Since p>alpha (.8968>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of female subjects is not significantly different from that of male subjects. 
 
-
+###############################################################
 #mean dars_totalScore for subjects aged 20-35 vs mean dars_totalScore for subjects aged 65-80
-
-#create new column in df - dars_age_category
-#http://www.talkstats.com/threads/adding-a-new-column-in-r-data-frame-with-values-conditional-on-another-column.30924/
-df$dars_age_category[df$dars_age>=20 & df$dars_age<=35]<-"young"
-df$dars_age_category[df$dars_age>=60 & df$dars_age<=80]<-"old"
+###############################################################
 
 #first, let's summarize the data, so we can get a quick, intuitive feel for it
 group_by(df, dars_age_category) %>% 
@@ -363,7 +375,7 @@ res.ftest
 t.test(dars_totalScore ~ dars_age_category, data = df,
         var.equal = TRUE)
 #print the p-value
-p = .4087
+#p = .4087
 #verbally interpret/ summarize
 #Since p>alpha (.4087>.05), fail to reject the null hypothesis. Conclude that the mean total rating scores of old subjects is not significantly different from that of young subjects. 
 
@@ -374,8 +386,11 @@ p = .4087
 
 #creating columns containing totals for each rating category (hobbies, foods, social, sensory)
 df$dars_hobbies_ratings_total <- df$dars_hobbies_ratings_01 + df$dars_hobbies_ratings_02 + df$dars_hobbies_ratings_03 + df$dars_hobbies_ratings_04
+
 df$dars_foods_ratings_total <- df$dars_foods_ratings_01 + df$dars_foods_ratings_02 + df$dars_foods_ratings_03 + df$dars_foods_ratings_04
+
 df$dars_social_ratings_total <- df$dars_social_ratings_01 + df$dars_social_ratings_02 + df$dars_social_ratings_03 + df$dars_social_ratings_04
+
 df$dars_sensory_ratings_total <- df$dars_sensory_ratings_01 + df$dars_sensory_ratings_02 + df$dars_sensory_ratings_03 + df$dars_sensory_ratings_04
 
 ###########################################################################################
